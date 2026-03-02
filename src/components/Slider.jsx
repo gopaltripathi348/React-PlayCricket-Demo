@@ -10,13 +10,18 @@ const Slider = ({ isOpen, onClose, link, onClubSelect, data }) => {
   const [menu, setMenu] = useState(null)
   const [openParents, setOpenParents] = useState([]);
   const sliderRef = useRef(null)
-  
+
+  let clubDomain = ''
+  if((window.location.hostname !== 'localhost') && (!window.location.hostname.includes('www.'))){
+    const urlData = window.location.hostname.split('.')
+    if((new URL(urlData[0])?.hostname !== 'play-cricket-staging') && (new URL(urlData[0])?.hostname !== 'play-cricket')){
+      clubDomain = new URL(urlData[0])?.hostname;
+    }
+  }
   useEffect(()=>{
     const handleClickOutside = (e) => {
       if(sliderRef.current&& !sliderRef.current.contains(e.target)){
         setOpenParents([]);
-        // setOpenMenu(null);
-        // setOpenSubMenu(null);
       }
     }
     document.addEventListener("mousedown",handleClickOutside);
@@ -41,53 +46,16 @@ const Slider = ({ isOpen, onClose, link, onClubSelect, data }) => {
     window.location.href = linkUrl;
   }
 
-  // const data = link === 'myclubs' ? 
-  //  [
-  //   {
-  //     id: "harlow town cc",
-  //     name: "Harlow Town CC",
-  //     clubLinks: [
-  //       { id: 1, name: 'Manage Club', path: "/manageClub", enable: true },
-  //       { id: 1, name: 'Customise Club Website', path: "/customiseclubwebsite", enable: false },
-  //       { id: 1, name: 'View Club Website', path: "/viewclubwebsite", enable: true },
-  //       { id: 1, name: 'Team Reports', path: "/teamreports", enable: true }
-  //     ]
-  //   },
-  //   {
-  //     id: "barnes cc",
-  //     name: "Barnes CC",
-  //     clubLinks: [
-  //       { id: 1, name: 'Manage Club', path: "/manageClub", enable: true },
-  //       { id: 1, name: 'Customise Club Website', path: "/customiseclubwebsite", enable: true },
-  //       { id: 1, name: 'View Club Website', path: "/viewclubwebsite", enable: true },
-  //       { id: 1, name: 'Team Reports', path: "/teamreports", enable: true }
-  //     ]
-  //   }
-  // ]:
-  // [
-  //   {
-  //     id: "Chloe Eaton",
-  //     name: "Chloe Eaton",
-  //     clubLinks: [
-  //       "My Stats",
-  //       "My Details",
-  //       "Play-Cricket Profile & Preferences",
-  //       "Roles & Memberships",
-  //       "Availability",
-  //       "Add Junior Account"
-  //     ]
-  //   },
-  //   {
-  //     id: "Violet Eaten",
-  //     name: "Violet Eaten",
-  //     clubLinks: [
-  //       "My Stats",
-  //       "Play-Cricket Profile & Preferences",
-  //       "Roles & Memberships",
-  //       "Availability",
-  //     ]
-  //   }
-  // ]
+    const handleUserLinkClick = (clubPath,path) =>{
+    if(clubDomain){
+      const linkUrl  = clubPath.replace('annatest',clubDomain)
+      window.location.href = linkUrl;
+    }
+    else{
+      window.location.href = path;
+    }
+  }
+
   return (
     <>
       {/* Backdrop */}
@@ -98,13 +66,6 @@ const Slider = ({ isOpen, onClose, link, onClubSelect, data }) => {
         {link === 'myclubs' ? 
         <div className={`${styles.accord} pt-3`}>
           <div>
-            {/* <div className="position-relative px-3">
-              <input
-                  className="form-control pe-5"
-                  placeholder="Search for club by Keyword or postcode"
-              />
-              <i className="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-            </div> */}
             {openParents.length > 0 &&
               <div className='d-flex justify-content-end pr-3 pt-1' onClick={()=>{setOpenParents([])}}>
                 <div className='text-white'>COLLAPSE ALL</div>
@@ -137,34 +98,19 @@ const Slider = ({ isOpen, onClose, link, onClubSelect, data }) => {
                         </svg>
                       </span>
                     </div>
-          
-                    {/* Dropdown Items */}
-                    {/* {openParents.includes(parent.id) && (
-                      <ul className="list-unstyled m-0 p-0">
-                        {parent.clubLinks.map((item, index) => (
-                          item.enable === true ? 
-                          <li key={index} className={`dropdown-item ml-4 text-white ${styles.clubcontent}`} onClick={()=>{if(item.name === 'ManageClub'){onClubSelect(parent.name);onClose();}}}>
-                            <span>- </span>
-                            {item.name}
-                          </li> : <></>
-                    ))}
-                      </ul>
-                    )} */}
                     {openParents.includes(parent.website.id) && ( ()=>
                       {
-                        // let user = data.UserRoles.filter(u => {if(u.website.id === parent.id){return u}})
-                        // links = getLinksByRole(user[0]?.role?.name);
                         const roles = parent.roles.map(role => role.name)
                         const linksToShow = roles.flatMap(role => roleLinks[role] || []);
                         const uniqueLinks = linksToShow.filter((link,index,array) => index === array.findIndex(l =>l.label === link.label))
                         return(<ul className="list-unstyled m-0 p-0">
                           {parent.hasAdminAccess ?                               
-                            <li className={`dropdown-item ml-4 text-white ${styles.clubcontent}`} onClick={()=>{onClubSelect(parent.website.name);sessionStorage.setItem('selectedClub',JSON.stringify({club:parent.website.name,subdomain:parent.website.subdomain}));onClose();}}>
+                            <li className={`dropdown-item ml-4 text-white ${styles.clubcontent}`} onClick={()=>{handleLinkClick('https://annatest.play-cricket.com/site_admin/home',parent.website.subdomain)}}>
                               <span>- </span>
                               Manage Club
                             </li>: null}
                           {uniqueLinks.map((link,index)=>(
-                              <li key={index} className={`dropdown-item ml-4 text-white ${styles.clubcontent}`} onClick={()=>{if(link.label === 'Manage Club'){onClubSelect(parent.name);sessionStorage.setItem('selectedClub',parent.name);onClose();} else{handleLinkClick(link.path,parent.website.subdomain)}}}>
+                              <li key={index} className={`dropdown-item ml-4 text-white ${styles.clubcontent}`} onClick={()=>{if(link.label === 'Manage Club'){handleLinkClick('https://annatest.play-cricket.com/site_admin/home',parent.website.subdomain)} else{handleLinkClick(link.path,parent.website.subdomain)}}}>
                                 <span>- </span>
                                 {link.label}
                               </li>
@@ -203,22 +149,22 @@ const Slider = ({ isOpen, onClose, link, onClubSelect, data }) => {
           {openParents.includes(data?.user?.id) && (
             <ul className="list-unstyled m-0 p-0">
               <li className={`dropdown-item ml-4 text-white ${styles.clubcontent}`}>
-                <a onClick={()=>{handleLinkClick(`https://annatest.play-cricket.com/player_stats/batting/${data.user.id}?rule_type_id=179`,JSON.parse(sessionStorage.getItem('selectedClub')).subdomain)}}>- My Stats</a>
+                <a onClick={()=>{handleUserLinkClick(`https://annatest.play-cricket.com/player_stats/batting/${data.user.id}?rule_type_id=179`,`https://www.play-cricket.com/player_stats/batting/${data.user.id}?rule_type_id=179`)}}>- My Stats</a>
               </li>
               <li className={`dropdown-item ml-4 text-white ${styles.clubcontent}`}>
-                <a onClick={()=>{handleLinkClick(`https://myaccount.play-cricket.com/profile-management/?id_token=eyJraWQiOiJoNGJTckxybHFYdkRjWWtvZGpuOVFLLXBHRjREalJXNDBzWmtEQW1Ncl9NIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIwMHVpajY5cjl2OEhmSjZXTzBpNyIsInZlciI6MSwiaXNzIjoiaHR0cHM6Ly9sb2dpbi5lY2IuY28udWsiLCJhdWQiOiIwb2E3NnltbDkybnFXQjdhcTBpNyIsImlhdCI6MTc3MTQ5Njk2OCwiZXhwIjoxNzcxNTAwNTY4LCJqdGkiOiJJRC5CUVNWOXhpVHcxTmlCczVoVlJhOEQ4Yll1UDFjUk5pZlNwYzlxalE5STJRIiwiYW1yIjpbInB3ZCJdLCJpZHAiOiIwb2E3enY3aTdjQnBpNDNBaDBpNyIsIm5vbmNlIjoiWXNHNzZqbyIsImF1dGhfdGltZSI6MTc3MTQ5NjkyNSwiYXRfaGFzaCI6ImdsV3hya0g0bDU1eTBWRUxPSXVwcncifQ.QVgaf3OCWz4sUnfmiII-eeZ4kEd0Ag5CQNO6EQZV_bv_0RjtELrGZhtepH_6L6vCqs-4rPcXwlhSNgmKeeXl6KUk3SY6k3wdTOfsOWlyV10Bt79laoOF2DOM7ATcJur2B8nsOVhp15Ucyh-4Mp4hNFHaVF_VOcPQd5wwsan1ME_7HO5M_677-QcAo_pps5N3Eea8yxckCNQOI-nXESO7pV4Twr6mWmxVrFz8tX_iaE-Jmk3gEou28w2NfShiIO4wZxFOEO_yCie7wCaB5eW1OElb4yBBqG4fzvxMRFGc4r-ptgIHO6dD9X7lB8KHMYbXO8mcq5EWsIKVnz6ZQcKO_w&access_token=eyJraWQiOiJoNGJTckxybHFYdkRjWWtvZGpuOVFLLXBHRjREalJXNDBzWmtEQW1Ncl9NIiwidHlwIjoiYXBwbGljYXRpb24vb2t0YS1pbnRlcm5hbC1hdCtqd3QiLCJhbGciOiJSUzI1NiJ9.eyJ2ZXIiOjEsImp0aSI6IkFULjhGaTVOeG5HRmZCWHlHcFVtYi0zQ2dDUk16dkdqbV85VFBxWWdOU3k2UmciLCJpc3MiOiJodHRwczovL2xvZ2luLmVjYi5jby51ayIsImF1ZCI6Imh0dHBzOi8vbG9naW4uZWNiLmNvLnVrIiwic3ViIjoiU3Jpa2FudGguRGFtYWNoYXJsYUBlY2IuY28udWsiLCJpYXQiOjE3NzE0OTY5NjgsImV4cCI6MTc3MTUwMDU2OCwiY2lkIjoiMG9hNzZ5bWw5Mm5xV0I3YXEwaTciLCJ1aWQiOiIwMHVpajY5cjl2OEhmSjZXTzBpNyIsInNjcCI6WyJvcGVuaWQiLCJva3RhLnVzZXJzLm1hbmFnZS5zZWxmIiwib2t0YS51c2Vycy5yZWFkLnNlbGYiXSwiYXV0aF90aW1lIjoxNzcxNDk2OTI1fQ.Q95qY-uifWt98MnQSdTefMtdSBSc5vT7CTwACdqT0fEkvC02hrIfK2EbNPA-oPw2XDXSUT26FPdiPN82hZwxS9_Ni-xPDhi2y3iuWmQI3nIgCFyRfNWJChxW3e5P5Q9ju74WAF_ps8xZ_gO_eUCOfIa6okqseuVHIwSsLhfP1PWh8HmgAhriZ3pLI24A_XXsdRknNYtttSeLxQ6cZ9lCBB5xXL3Jmm7vsnWx1oe_G6fUS_9Q_jT0J-Yslo2USBiCwOgi3QIsPisVrNIr8U4hR_8CvQYLHACFt7n8z1MGO-CBtazlt6JG_hglwT0Sjn89B5iXa3Ai2FxiZY3Va50gSw&token_type=Bearer&expires_in=3600&scope=openid+okta.users.manage.self+okta.users.read.self`,JSON.parse(sessionStorage.getItem('selectedClub')).subdomain)}}>- My Details</a>
+                <a onClick={()=>{window.location.href = `https://myaccount.play-cricket.com/profile-management/?id_token=eyJraWQiOiJoNGJTckxybHFYdkRjWWtvZGpuOVFLLXBHRjREalJXNDBzWmtEQW1Ncl9NIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIwMHVpajY5cjl2OEhmSjZXTzBpNyIsInZlciI6MSwiaXNzIjoiaHR0cHM6Ly9sb2dpbi5lY2IuY28udWsiLCJhdWQiOiIwb2E3NnltbDkybnFXQjdhcTBpNyIsImlhdCI6MTc3MTQ5Njk2OCwiZXhwIjoxNzcxNTAwNTY4LCJqdGkiOiJJRC5CUVNWOXhpVHcxTmlCczVoVlJhOEQ4Yll1UDFjUk5pZlNwYzlxalE5STJRIiwiYW1yIjpbInB3ZCJdLCJpZHAiOiIwb2E3enY3aTdjQnBpNDNBaDBpNyIsIm5vbmNlIjoiWXNHNzZqbyIsImF1dGhfdGltZSI6MTc3MTQ5NjkyNSwiYXRfaGFzaCI6ImdsV3hya0g0bDU1eTBWRUxPSXVwcncifQ.QVgaf3OCWz4sUnfmiII-eeZ4kEd0Ag5CQNO6EQZV_bv_0RjtELrGZhtepH_6L6vCqs-4rPcXwlhSNgmKeeXl6KUk3SY6k3wdTOfsOWlyV10Bt79laoOF2DOM7ATcJur2B8nsOVhp15Ucyh-4Mp4hNFHaVF_VOcPQd5wwsan1ME_7HO5M_677-QcAo_pps5N3Eea8yxckCNQOI-nXESO7pV4Twr6mWmxVrFz8tX_iaE-Jmk3gEou28w2NfShiIO4wZxFOEO_yCie7wCaB5eW1OElb4yBBqG4fzvxMRFGc4r-ptgIHO6dD9X7lB8KHMYbXO8mcq5EWsIKVnz6ZQcKO_w&access_token=eyJraWQiOiJoNGJTckxybHFYdkRjWWtvZGpuOVFLLXBHRjREalJXNDBzWmtEQW1Ncl9NIiwidHlwIjoiYXBwbGljYXRpb24vb2t0YS1pbnRlcm5hbC1hdCtqd3QiLCJhbGciOiJSUzI1NiJ9.eyJ2ZXIiOjEsImp0aSI6IkFULjhGaTVOeG5HRmZCWHlHcFVtYi0zQ2dDUk16dkdqbV85VFBxWWdOU3k2UmciLCJpc3MiOiJodHRwczovL2xvZ2luLmVjYi5jby51ayIsImF1ZCI6Imh0dHBzOi8vbG9naW4uZWNiLmNvLnVrIiwic3ViIjoiU3Jpa2FudGguRGFtYWNoYXJsYUBlY2IuY28udWsiLCJpYXQiOjE3NzE0OTY5NjgsImV4cCI6MTc3MTUwMDU2OCwiY2lkIjoiMG9hNzZ5bWw5Mm5xV0I3YXEwaTciLCJ1aWQiOiIwMHVpajY5cjl2OEhmSjZXTzBpNyIsInNjcCI6WyJvcGVuaWQiLCJva3RhLnVzZXJzLm1hbmFnZS5zZWxmIiwib2t0YS51c2Vycy5yZWFkLnNlbGYiXSwiYXV0aF90aW1lIjoxNzcxNDk2OTI1fQ.Q95qY-uifWt98MnQSdTefMtdSBSc5vT7CTwACdqT0fEkvC02hrIfK2EbNPA-oPw2XDXSUT26FPdiPN82hZwxS9_Ni-xPDhi2y3iuWmQI3nIgCFyRfNWJChxW3e5P5Q9ju74WAF_ps8xZ_gO_eUCOfIa6okqseuVHIwSsLhfP1PWh8HmgAhriZ3pLI24A_XXsdRknNYtttSeLxQ6cZ9lCBB5xXL3Jmm7vsnWx1oe_G6fUS_9Q_jT0J-Yslo2USBiCwOgi3QIsPisVrNIr8U4hR_8CvQYLHACFt7n8z1MGO-CBtazlt6JG_hglwT0Sjn89B5iXa3Ai2FxiZY3Va50gSw&token_type=Bearer&expires_in=3600&scope=openid+okta.users.manage.self+okta.users.read.self`}}>- My Details</a>
               </li>
               <li className={`dropdown-item ml-4 text-white ${styles.clubcontent}`}>
-                <a onClick={()=>{handleLinkClick(`https://annatest.play-cricket.com/users/profiles/${data.user.id}/edit`,JSON.parse(sessionStorage.getItem('selectedClub')).subdomain)}}>- Play-Cricket Profile & Preference</a>
+                <a onClick={()=>{handleUserLinkClick(`https://annatest.play-cricket.com/users/profiles/${data.user.id}/edit`,`https://www.play-cricket.com/users/profiles/${data.user.id}/edit`)}}>- Play-Cricket Profile & Preference</a>
               </li>
               <li className={`dropdown-item ml-4 text-white ${styles.clubcontent}`}>
-                <a onClick={()=>{handleLinkClick(`https://annatest.play-cricket.com/users/profiles/${data.user.id}/edit`,JSON.parse(sessionStorage.getItem('selectedClub')).subdomain)}}>- Roles & Memberships</a>
+                <a onClick={()=>{handleUserLinkClick(`https://annatest.play-cricket.com/users/profiles/${data.user.id}/edit`,`https://www.play-cricket.com/users/profiles/${data.user.id}/edit`)}}>- Roles & Memberships</a>
               </li>
               <li className={`dropdown-item ml-4 text-white ${styles.clubcontent}`}>
-                <a onClick={()=>{handleLinkClick(`https://annatest.play-cricket.com/users/profiles/${data.user.id}/availability`,JSON.parse(sessionStorage.getItem('selectedClub')).subdomain)}}>- Availability</a>
+                <a onClick={()=>{handleUserLinkClick(`https://annatest.play-cricket.com/users/profiles/${data.user.id}/availability`,`https://www.play-cricket.com/users/profiles/${data.user.id}/availability`)}}>- Availability</a>
               </li>
               <li className={`dropdown-item ml-4 text-white ${styles.clubcontent}`}>
-                <a onClick={()=>{handleLinkClick(`https://annatest.play-cricket.com/users/child_accounts/new`,JSON.parse(sessionStorage.getItem('selectedClub')).subdomain)}}>- Add Junior Account</a>
+                <a onClick={()=>{handleUserLinkClick(`https://annatest.play-cricket.com/users/child_accounts/new`,`https://www.play-cricket.com/users/child_accounts/new`)}}>- Add Junior Account</a>
               </li>
             </ul>
           )}
@@ -247,16 +193,16 @@ const Slider = ({ isOpen, onClose, link, onClubSelect, data }) => {
               {openParents.includes(childParent.id) && (
                 <ul className="list-unstyled m-0 p-0">
                   <li className={`dropdown-item ml-4 text-white ${styles.clubcontent}`}>
-                    <a onClick={()=>{handleLinkClick(`https://annatest.play-cricket.com/player_stats/batting/${childParent.id}?rule_type_id=179`,JSON.parse(sessionStorage.getItem('selectedClub')).subdomain)}}>- Stats</a>
+                    <a onClick={()=>{handleUserLinkClick(`https://annatest.play-cricket.com/player_stats/batting/${childParent.id}?rule_type_id=179`,`https://www.play-cricket.com/player_stats/batting/${childParent.id}?rule_type_id=179 `)}}>- Stats</a>
                   </li>
                   <li className={`dropdown-item ml-4 text-white ${styles.clubcontent}`}>
-                    <a onClick={()=>{handleLinkClick(`https://annatest.play-cricket.com/users/profiles/${childParent.id}/edit`,JSON.parse(sessionStorage.getItem('selectedClub')).subdomain)}}>- Play-Cricket Profile & Preference</a>
+                    <a onClick={()=>{handleUserLinkClick(`https://annatest.play-cricket.com/users/profiles/${childParent.id}/edit`,`https://www.play-cricket.com/users/profiles/${childParent.id}/edit`)}}>- Play-Cricket Profile & Preference</a>
                   </li>
                   <li className={`dropdown-item ml-4 text-white ${styles.clubcontent}`}>
-                    <a onClick={()=>{handleLinkClick(`https://annatest.play-cricket.com/users/profiles/${childParent.id}/edit`,JSON.parse(sessionStorage.getItem('selectedClub')).subdomain)}}>- Roles & Memberships</a>
+                    <a onClick={()=>{handleUserLinkClick(`https://annatest.play-cricket.com/users/profiles/${childParent.id}/edit`,`https://www.play-cricket.com/users/profiles/${childParent.id}/edit`)}}>- Roles & Memberships</a>
                   </li>
                   <li className={`dropdown-item ml-4 text-white ${styles.clubcontent}`}>
-                    <a onClick={()=>{handleLinkClick(`https://annatest.play-cricket.com/users/profiles/${childParent.id}/availability`,JSON.parse(sessionStorage.getItem('selectedClub')).subdomain)}}>- Availability</a>
+                    <a onClick={()=>{handleUserLinkClick(`https://annatest.play-cricket.com/users/profiles/${childParent.id}/availability`,`https://www.play-cricket.com/users/profiles/${childParent.id}/availability`)}}>- Availability</a>
                   </li>
                 </ul>
               )}
@@ -271,12 +217,6 @@ const Slider = ({ isOpen, onClose, link, onClubSelect, data }) => {
             </svg>
             <a href="https://play-cricket.ecb.co.uk/hc/en-us?_ga=2.170838370.376644104.1771493285-1989104338.1771493285" className="ml-2 slider-name text-white font-weight-bold">Help Center</a>
           </div>
-          {/* <div className="d-flex align-items-center py-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M6.99 11L3 15L6.99 19V16H14V14H6.99V11ZM21 9L17.01 5V8H10V10H17.01V13L21 9Z" fill="#FFFFFF"/>
-            </svg>
-            <span className="ml-2 slider-name text-white font-weight-bold">Switch user</span>
-          </div> */}
           <div className="d-flex align-items-center py-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M17 7L15.59 8.41L18.17 11H8V13H18.17L15.59 15.58L17 17L22 12L17 7ZM4 5H12V3H4C2.9 3 2 3.9 2 5V19C2 20.1 2.9 21 4 21H12V19H4V5Z" fill="#FFFFFF"/>

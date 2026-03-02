@@ -20,11 +20,12 @@ export default function MainHeader({clubs,data}) {
   return (
     <>
     {data?.topHeaderData &&
-    <>
-      <TopHeader clubs={clubs} data={data.topHeaderData} sendData={handleClub} onMenuClick={(link)=> {setSelectedLink(link);setIsSliderOpen(true)}}/>
-      <Slider isOpen={isSliderOpen} onClose={()=>setIsSliderOpen(false)} link={selectedLink} onClubSelect={clubHandler} data={data.topHeaderData}/>
-    </>}
-    {((selectedClub !== '' || sessionStorage.getItem('selectedClub') !== null) && data?.headerData) && <Header club={JSON.parse(sessionStorage.getItem('selectedClub')).club} data={data.headerData}/>}
+      <>
+        <TopHeader clubs={clubs} data={data.topHeaderData} sendData={handleClub} onMenuClick={(link)=> {setSelectedLink(link);setIsSliderOpen(true)}}/>
+        <Slider isOpen={isSliderOpen} onClose={()=>setIsSliderOpen(false)} link={selectedLink} onClubSelect={clubHandler} data={data.topHeaderData}/>
+      </>
+    }
+    {(data?.headerData) && <Header club={selectedClub} data={data.headerData}/>}
     </>
   )
 }
