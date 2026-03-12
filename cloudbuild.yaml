@@ -8,7 +8,7 @@ steps:
     args: ['run', 'build']
 
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['-m', 'rsync', '-r', 'dist', 'gs://collaboration-filestore/header-component/commonBuildForBothHeaders17feb']
+    args: ["-m", "rsync", "-r", "dist", "gs://react-nav/test-dist/"]
 
 options:
   logging: CLOUD_LOGGING_ONLY
