@@ -9,6 +9,3 @@ steps:
 
   - name: 'gcr.io/cloud-builders/gsutil'
     args: ["-m", "rsync", "-r", "dist", "gs://react-nav/test-dist/"]
-
-options:
-  logging: CLOUD_LOGGING_ONLY
