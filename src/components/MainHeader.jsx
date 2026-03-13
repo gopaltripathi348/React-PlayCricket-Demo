@@ -2,7 +2,7 @@ import React,{useEffect, useState} from 'react';
 import TopHeader from './TopHeader';
 import Header from './Header';
 import topStyles from "./TopHeader.module.css";
-import styles from './header.module.css';
+import styles from './Header.module.css';
 import "../styles/styles.css";
 import Slider from './Slider';
 
