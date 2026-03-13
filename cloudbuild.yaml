@@ -14,7 +14,9 @@ steps:
         npm run build
 
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ["-m",
+    args: 
+      [
+           "-m",
            "rsync",
            "-r",
            "dist",
